@@ -1,2 +1,9 @@
-# Nexus-chi
-HI·NEXUS — Hyperinsulinism Intelligence Network | BioAI Research Institute + Dev Studio | CHI Project 2026
+# HI·NEXUS
+
+Hyperinsulinism Intelligence Network for Universal eXploration & Solutions
+
+**Proyecto CHI 2026** - BioAI Research Institute + Dev Studio
+
+## Estructura del Monorepo
+
+Ver `docs/ARCHITECTURE.md` para detalles completos.
