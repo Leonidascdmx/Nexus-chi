@@ -1,3 +1,4 @@
+import re
 import requests
 from tools.variant_parser import extract_hgvs
 
@@ -51,3 +52,63 @@ def fetch_clinvar_variants(gene: str) -> list:
             print(f"Error querying ClinVar summary: {e}")
 
     return variants
+
+def fetch_variant_from_clinvar(variant: str) -> dict:
+    """
+    Searches the live NCBI ClinVar database for a specific genomic or protein variant term,
+    returning structured clinical classifications and parent gene mapping.
+    """
+    url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
+    params = {
+        "db": "clinvar",
+        "term": variant,
+        "retmode": "json",
+        "retmax": 3
+    }
+
+    try:
+        res = requests.get(url, params=params, timeout=10).json()
+        ids = res.get("esearchresult", {}).get("idlist", [])
+    except Exception as e:
+        print(f"Error searching variant in ClinVar: {e}")
+        return None
+
+    if not ids:
+        return None
+
+    fetch_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi"
+    try:
+        details = requests.get(fetch_url, params={
+            "db": "clinvar",
+            "id": ",".join(ids),
+            "retmode": "json"
+        }, timeout=10).json()
+        
+        for vid in ids:
+            item = details.get("result", {}).get(vid, {})
+            title = item.get("title", "")
+            
+            # Robust gene extraction from ClinVar record title: e.g. "NM_000352.6(ABCC8):c.2302C>T"
+            gene_name = "unknown"
+            gene_match = re.search(r'\(([^)]+)\)', title)
+            if gene_match:
+                gene_name = gene_match.group(1)
+            else:
+                # Fallback to checking potential summary keys
+                genes_info = item.get("genes", [])
+                if genes_info and isinstance(genes_info, list):
+                    gene_name = genes_info[0].get("symbol", "unknown")
+                elif isinstance(genes_info, dict):
+                    gene_name = genes_info.get("symbol", "unknown")
+            
+            return {
+                "clinvar_id": vid,
+                "title": title,
+                "clinical_significance": item.get("clinical_significance", "unknown"),
+                "review_status": item.get("review_status", "unknown"),
+                "gene": gene_name
+            }
+    except Exception as e:
+        print(f"Error fetching variant summary from ClinVar: {e}")
+
+    return None

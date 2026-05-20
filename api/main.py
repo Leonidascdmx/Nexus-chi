@@ -12,3 +12,8 @@ def root():
 def analyze(gene: str):
     result = orch.analyze_gene(gene)
     return result
+
+@app.get("/analyze_variant")
+def analyze_variant(variant: str):
+    result = orch.bio.run_variant(variant)
+    return result
