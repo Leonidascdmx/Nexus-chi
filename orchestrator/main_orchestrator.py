@@ -33,5 +33,6 @@ class MainOrchestrator:
 
 if __name__ == "__main__":
     orchestrator = MainOrchestrator()
-    result = orchestrator.run("Analyze hyperinsulinism treatments")
+    result = orchestrator.run("ABCC8 mutation")
     print(result)
+
