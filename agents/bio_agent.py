@@ -1,55 +1,33 @@
-import os
-import json
-
 class BioAgent:
     """
-    BioAgent parses real research strings, performs target database lookups,
-    and returns 100% structured, non-conversational clinical parameters.
+    BioAgent performs clinical interpretation on genetic research data.
     """
-    def __init__(self):
-        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-        self.db_path = os.path.join(BASE_DIR, "..", "data", "chi_variants.json")
+    def run(self, research_data: dict) -> dict:
+        print("🧬 Performing clinical interpretation...")
 
-    def load_variants_db(self) -> dict:
-        try:
-            if os.path.exists(self.db_path):
-                with open(self.db_path, "r", encoding="utf-8") as f:
-                    return json.load(f)
-        except Exception:
-            pass
-        return {}
+        gene = research_data.get("gene", "")
+        summary = research_data.get("summary", "")
 
-    def run(self, data: str) -> str:
-        print("🧬 Real bioanalysis running...")
-        
-        db = self.load_variants_db()
-        genes_db = db.get("genes", {})
-        
-        # Detect which gene is discussed in the Wikipedia extract
-        target_gene = None
-        for gene in genes_db.keys():
-            if gene.lower() in data.lower():
-                target_gene = gene
-                break
-                
-        if not target_gene:
-            # Fallback to general lookup if no exact match is found in text
-            return json.dumps({
-                "error": "No curated hyperinsulinism gene found in research data",
-                "extracted_context": data[:200]
-            }, indent=2)
-            
-        gene_info = genes_db[target_gene]
-        
-        # Construct a 100% factual biological profile
-        result = {
-            "gene": target_gene,
-            "full_name": gene_info["full_name"],
-            "molecular_function": gene_info["description"],
-            "clinical_impact": gene_info["clinical_relevance"],
-            "diazoxide_responsiveness": "RESISTANT" if gene_info["resistant_treatments"] else "RESPONSIVE",
-            "recommended_therapies": gene_info["responsive_treatments"],
-            "cataloged_pathogenic_variants": [v["variant"] for v in gene_info["common_variants"]]
+        # Simple rules (Initial clinical MVP)
+        if "ABCC8" in gene.upper():
+            return {
+                "gene": gene,
+                "condition": "Congenital Hyperinsulinism (CHI)",
+                "risk_level": "High",
+                "clinical_relevance": "ABCC8 mutations are a major cause of CHI affecting insulin regulation.",
+                "treatment_notes": [
+                    "Diazoxide (first-line)",
+                    "Consider octreotide if unresponsive",
+                    "Possible surgery in focal cases"
+                ],
+                "raw_summary": summary
+            }
+
+        return {
+            "gene": gene,
+            "condition": "Unknown",
+            "risk_level": "Unknown",
+            "clinical_relevance": summary,
+            "treatment_notes": [],
+            "raw_summary": summary
         }
-        
-        return json.dumps(result, indent=2, ensure_ascii=False)

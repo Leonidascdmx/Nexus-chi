@@ -1,29 +1,27 @@
 import requests
-import re
 
 class ResearchAgent:
     """
-    ResearchAgent conducts real-world clinical and genetic literature inquiries
-    directly using the live Wikipedia Page Summary API with appropriate headers.
+    ResearchAgent gathers real biomedical summary data directly from the Wikipedia REST API.
     """
-    def run(self, query: str) -> str:
-        print("🔎 Real research running...")
-        
-        # Clean query: extract gene name (e.g. ABCC8, KCNJ11, GCK, GLUD1) or use first word
-        gene_match = re.search(r'\b(ABCC8|KCNJ11|GCK|GLUD1)\b', query, re.IGNORECASE)
-        target = gene_match.group(1).upper() if gene_match else query.split()[0]
-        
-        url = f"https://en.wikipedia.org/api/rest_v1/page/summary/{target}"
+    def run(self, gene: str) -> dict:
+        print("🔎 Fetching real biomedical data...")
+
+        url = f"https://en.wikipedia.org/api/rest_v1/page/summary/{gene}"
         headers = {
-            "User-Agent": "HI-NEXUS-Agentic-Platform/1.0 (clinical-research@hi-nexus.org)"
+            "User-Agent": "HI-NEXUS-Agent/1.0 (clinical-research@hi-nexus.org)"
         }
         
         try:
             res = requests.get(url, headers=headers, timeout=10)
-            if res.status_code == 200:
-                data = res.json()
-                return data.get("extract", "No info found")
+            if res.status_code != 200:
+                return {"error": "Gene not found"}
+
+            data = res.json()
+            return {
+                "gene": gene,
+                "summary": data.get("extract", ""),
+                "source": "Wikipedia"
+            }
         except Exception as e:
-            return f"Error fetching data: {str(e)}"
-            
-        return "No info found on Wikipedia"
+            return {"error": f"Request failed: {str(e)}"}
