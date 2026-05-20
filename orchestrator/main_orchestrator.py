@@ -7,11 +7,15 @@ if sys.platform.startswith("win"):
     except Exception:
         pass
 
-from agents.research_agent import ResearchAgent
-from agents.bio_agent import BioAgent
-
 class MainOrchestrator:
+    """
+    MainOrchestrator coordinates the active Level 2 Clinical Pipeline
+    (PubMed E-Utilities -> Multi-Gene Locus Classification).
+    """
     def __init__(self):
+        from agents.research_agent import ResearchAgent
+        from agents.bio_agent import BioAgent
+
         self.research = ResearchAgent()
         self.bio = BioAgent()
 
@@ -22,7 +26,6 @@ class MainOrchestrator:
 
         return {
             "input": gene,
-            "research": research,
             "clinical_analysis": clinical
         }
 
@@ -30,4 +33,5 @@ if __name__ == "__main__":
     orchestrator = MainOrchestrator()
     result = orchestrator.analyze_gene("ABCC8")
     print("\nResult:")
-    print(result)
+    import json
+    print(json.dumps(result, indent=2))
