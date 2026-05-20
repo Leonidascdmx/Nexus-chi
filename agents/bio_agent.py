@@ -4,8 +4,8 @@ import json
 
 class BioAgent:
     """
-    BioAgent Nivel 3: Features multi-model LLM inference, robust JSON parsing,
-    literature consistency validation, and ClinVar significance indexing.
+    BioAgent Nivel 4: Performs deep clinical interpretation with ClinVar variant normalization,
+    HGVS codon alignment, literature consistency audits, and pathogenic confidence scoring.
     """
     def __init__(self):
         print("🧠 Loading models...")
@@ -57,6 +57,32 @@ class BioAgent:
             "confidence": 0.0
         }
 
+    def normalize_variants(self, variants: list) -> list:
+        """
+        Normalizes ClinVar records into specific gene, cDNA (hgvs_c), and protein (hgvs_p) annotations.
+        """
+        normalized = []
+
+        for v in variants:
+            hgvs_c = None
+            hgvs_p = None
+
+            for h in v.get("hgvs", []):
+                if h["type"] == "cDNA":
+                    hgvs_c = h["value"]
+                elif h["type"] in ["protein", "simple_protein"]:
+                    hgvs_p = h["value"]
+
+            normalized.append({
+                "gene": v.get("gene"),
+                "hgvs_c": hgvs_c,
+                "hgvs_p": hgvs_p,
+                "clinical_significance": v.get("clinical_significance"),
+                "review_status": v.get("review_status")
+            })
+
+        return normalized
+
     def run(self, research_data: dict, variants: list) -> dict:
         print("🧬 Performing clinical interpretation...")
 
@@ -100,7 +126,7 @@ Respond ONLY in JSON:
                 raw = self.gpt_tokenizer.decode(output[0], skip_special_tokens=True)
                 parsed = self.safe_json_parse(raw)
             except Exception as dl_error:
-                print(f"⚠️ Live model reasoning error: {dl_error}. Pivoting to Edge engine.")
+                print(f"⚠️ Live model reasoning error: {dl_error}. Reverting to Edge engine.")
                 raw = ""
 
         # Edge Fallback and Robust Parsing Recovery
@@ -147,26 +173,29 @@ Respond ONLY in JSON:
                 "treatment": profile["treatment"],
                 "confidence": 0.85
             }
-            
-            # Construct raw text representation to compute consistency score
             raw = f"Condition: {profile['condition']} Mechanism: {profile['mechanism']}"
 
-        # ─── 🧠 CLINICAL VALIDATION ───
+        # ─── 🧠 CLINICAL VALIDATION & HGVS NORMALIZATION ───
+        normalized_variants = self.normalize_variants(variants)
+        
+        # Calculate pathogenic mutation count from ClinVar metadata
+        pathogenic_count = sum(
+            1 for v in normalized_variants
+            if v.get("clinical_significance") and "pathogenic" in v["clinical_significance"].lower()
+        )
+        
+        variant_confidence = pathogenic_count / max(len(normalized_variants), 1)
         consistency_score = self.validate_consistency(raw, articles)
-
-        # Calculate ClinVar pathogenicity index based on actual classifications
-        clinvar_score = sum(
-            1 for v in variants if "pathogenic" in v.get("clinical_significance", "").lower()
-        ) / max(len(variants), 1)
-
-        # Aggregate and average the confidence vectors
-        final_confidence = (parsed.get("confidence", 0.5) + consistency_score + clinvar_score) / 3
+        
+        # Calculate final aggregated confidence score
+        final_confidence = (parsed.get("confidence", 0.5) + consistency_score + variant_confidence) / 3
 
         return {
             "gene": gene_upper,
             "diagnosis": parsed,
             "validated": final_confidence > 0.6,
             "confidence_score": round(final_confidence, 3),
-            "variants": variants,
+            "variants": normalized_variants[:5],
+            "variant_confidence": round(variant_confidence, 3),
             "evidence": articles[:3]
         }
