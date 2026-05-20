@@ -1,28 +1,52 @@
 import os
+import re
+from skills.pubmed_client import search_pubmed
 from skills.web_search import search
 
 class ResearchAgent:
     """
-    ResearchAgent gathers literature and factual information using the web_search skill.
+    ResearchAgent parses the clinical goal, extracts genes, and queries PubMed
+    as well as general medical search indices for real-world research.
     """
     def run(self, query: str) -> str:
-        print("🔎 ResearchAgent running web search...")
+        print(f"🔎 ResearchAgent conducting PubMed & medical search for: {query}")
         
-        # Perform live search
-        search_summary = search(query)
-        
-        # Check if LLM keys are configured for professional synthesis
+        # 1. Detect if any known hyperinsulinism gene is mentioned
+        genes_found = []
+        for gene in ["ABCC8", "KCNJ11", "GCK", "GLUD1", "HADH", "SLC16A1"]:
+            if gene.lower() in query.lower():
+                genes_found.append(gene)
+
+        target_term = query
+        if genes_found:
+            target_term = f"{genes_found[0]} congenital hyperinsulinism"
+
+        # 2. Run real PubMed query
+        print(f"   -> Querying official PubMed database for '{target_term}'...")
+        pubmed_articles = search_pubmed(target_term, max_results=3)
+
+        # 3. Compile a real literature log
+        literature_report = "### [PubMed Lit-Finder Results]\n"
+        if pubmed_articles:
+            for art in pubmed_articles:
+                literature_report += f"*   **Paper**: {art['title']}\n"
+                literature_report += f"    *Journal*: {art['journal']} | [Read PMID {art['pmid']}]({art['url']})\n\n"
+        else:
+            literature_report += "*No active PubMed articles returned. Querying general index.*\n\n"
+            search_summary = search(query, max_results=2)
+            literature_report += search_summary
+
+        # Check if LLM keys are configured for synthesis
         gemini_key = os.environ.get("GEMINI_API_KEY")
         openai_key = os.environ.get("OPENAI_API_KEY")
         
         prompt = f"""
 You are an expert AI Research Agent for HI-NEXUS specializing in Congenital Hyperinsulinism (CHI).
-Compile and synthesize a professional, highly readable markdown report on: "{query}"
+Compile a professional markdown literature synthesis.
 
-Search Results context retrieved:
-{search_summary}
-
-Structure the report with an Executive Summary, Clinical Insights, and Key References.
+Goal Query: "{query}"
+Retrieved Literature:
+{literature_report}
 """
 
         # 1. Try Gemini
@@ -52,17 +76,18 @@ Structure the report with an Executive Summary, Clinical Insights, and Key Refer
             except Exception:
                 pass
 
-        # 3. Fallback: return the raw structured search results with a professional header
-        return f"""# HI-NEXUS Research Report: {query}
-*Factual web literature compiled by ResearchAgent.*
+        # 3. Fallback: Return structured factual report
+        return f"""# HI-NEXUS Scientific Literature Synthesis
+*Real-time PubMed lookup compiled by ResearchAgent.*
 
-## 1. Executive Summary
-An initial investigation was launched on the topic. Live databases returned relevant clinical references detailing treatments, genetic causes, and ongoing clinical trials for Congenital Hyperinsulinism.
+## 1. Scope of Inquiry
+Analyzing literature regarding: **"{query}"**
+Target gene associations identified: {", ".join(genes_found) if genes_found else "General clinical terms"}
 
-## 2. Source Compilation & Web References
-{search_summary}
+## 2. Active PubMed Bibliography
+{literature_report}
 """
 
 if __name__ == "__main__":
     agent = ResearchAgent()
-    print(agent.run("Diazoxide resistance in Congenital Hyperinsulinism"))
+    print(agent.run("ABCC8 mutations treatments"))

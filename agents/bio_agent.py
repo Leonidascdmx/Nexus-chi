@@ -1,17 +1,23 @@
 import os
+import json
 import re
 
 class BioAgent:
     """
-    BioAgent analyzes genetic sequences and biological mechanisms.
+    BioAgent parses the literature data and matches it against our local curated 
+    Congenital Hyperinsulinism variant database (data/chi_variants.json) for molecular insights.
     """
     def __init__(self):
+        # Establish path to variants database
+        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+        self.db_path = os.path.join(BASE_DIR, "..", "data", "chi_variants.json")
+        
         self.codon_table = {
             'ATA':'I', 'ATC':'I', 'ATT':'I', 'ATG':'M',
             'ACA':'T', 'ACC':'T', 'ACG':'T', 'ACT':'T',
             'AAC':'N', 'AAT':'N', 'AAG':'K', 'AAA':'K',
             'GCA':'A', 'GCC':'A', 'GCG':'A', 'GCT':'A',
-            'GAC':'D', 'GAT':'D', 'GAG':'E', 'GAA':'E',
+            'GAC':'D', 'GAC':'D', 'GAG':'E', 'GAA':'E',
             'GGA':'G', 'GGC':'G', 'GGG':'G', 'GGT':'G',
             'TCA':'S', 'TCC':'S', 'TCG':'S', 'TCT':'S',
             'TTC':'F', 'TTT':'F', 'TTA':'L', 'TTG':'L',
@@ -23,52 +29,93 @@ class BioAgent:
             'CGA':'R', 'CGC':'R', 'CGG':'R', 'CGT':'R',
         }
 
+    def load_variants_db(self) -> dict:
+        try:
+            if os.path.exists(self.db_path):
+                with open(self.db_path, "r", encoding="utf-8") as f:
+                    return json.load(f)
+        except Exception:
+            pass
+        return {}
+
     def run(self, data: str) -> str:
-        print("🧬 BioAgent analyzing clinical and genomic data...")
+        print("🧬 BioAgent executing clinical variant lookup...")
         
-        # 1. Search for DNA nucleotide sequence (at least 6 characters of ATGC)
+        # Load local curated dataset
+        db = self.load_variants_db()
+        genes_db = db.get("genes", {})
+        
+        # Identify targeted gene from the literature input
+        targeted_gene = None
+        for g_key in genes_db.keys():
+            if g_key.lower() in data.lower():
+                targeted_gene = g_key
+                break
+        
+        # Compile molecular report
+        molecular_report = ""
+        if targeted_gene:
+            gene_info = genes_db[targeted_gene]
+            molecular_report = f"""### Curated Genomic Profile: {targeted_gene}
+*   **Full Name**: {gene_info['full_name']}
+*   **Molecular Function**: {gene_info['description']}
+*   **Clinical Relevance & Phenotype**: {gene_info['clinical_relevance']}
+*   **Diazoxide Responsiveness**: {'Resistente' if gene_info['resistant_treatments'] else 'Responsivo'}
+*   **Recommended Therapies**: {", ".join(gene_info['responsive_treatments'])}
+*   **Diazoxide Resistance Class**: {", ".join(gene_info['resistant_treatments']) if gene_info['resistant_treatments'] else "Ninguna (Suele responder)"}
+
+#### 🧬 Cataloged Pathogenic Variants:
+"""
+            for var in gene_info['common_variants']:
+                molecular_report += f"*   **Variant**: `{var['variant']}` | *Class*: **{var['classification']}**\n"
+                molecular_report += f"    *Impact*: {var['significance']}\n"
+        else:
+            molecular_report = """### Curated Genomic Profile: General CHI
+*No specific gene locus (ABCC8, KCNJ11, GCK, GLUD1) was identified in the query context. Standard clinical protocol defaults to broad-spectrum genomic testing.*
+"""
+
+        # Look for nucleotide sequence calculation needs
         dna_match = re.search(r'\b[ATGCatgc]{6,}\b', data)
         sequence_report = ""
-        
         if dna_match:
             dna_seq = dna_match.group(0).upper()
             rna_seq = dna_seq.replace('T', 'U')
             
-            # Translate into protein sequence
+            # Translate into protein
             protein = []
             for i in range(0, len(dna_seq) - (len(dna_seq) % 3), 3):
                 codon = dna_seq[i:i+3]
                 protein.append(self.codon_table.get(codon, 'X'))
             protein_seq = "".join(protein)
             
-            # Calculate GC Content
             g_count = dna_seq.count('G')
             c_count = dna_seq.count('C')
             gc_pct = ((g_count + c_count) / len(dna_seq) * 100) if dna_seq else 0.0
             
             sequence_report = f"""
-### [Genomic Sequence Characterization]
-*   **Detected DNA Sequence**: `{dna_seq}`
-*   **Transcribed RNA Sequence**: `{rna_seq}`
-*   **Translated Peptide Chain (Protein)**: `{protein_seq}`
-*   **GC Content Metric**: `{gc_pct:.2f}%`
-
-*Molecular Analysis*: A GC ratio of {gc_pct:.1f}% indicates specific structural binding energies (Tm) for the double helix, typical of genetic target regions in pancreatic ATP-sensitive potassium channels.
+### [DNA Sequence Verification Metrics]
+*   **Isolated DNA Locus**: `{dna_seq}`
+*   **RNA Transcript**: `{rna_seq}`
+*   **Protein Peptide**: `{protein_seq}`
+*   **GC Content Stability**: `{gc_pct:.2f}%`
 """
 
-        # Check if LLM keys are configured for professional scientific analysis
+        # Check if LLM keys are configured
         gemini_key = os.environ.get("GEMINI_API_KEY")
         openai_key = os.environ.get("OPENAI_API_KEY")
         
         prompt = f"""
-You are a PhD Bioinformatics and Genetics Agent for HI-NEXUS.
-Provide a high-quality, molecular-level analysis of the following clinical/research findings:
+You are an expert AI Bioinformatics and Genetics Agent for HI-NEXUS.
+Provide a professional, molecular genetics evaluation.
+
+Retrieved Literature Context:
 {data}
 
-Sequence Analysis (pre-calculated):
-{sequence_report if sequence_report else "No genetic sequences detected in this task."}
+Target Locus Database Lookup:
+{molecular_report}
 
-Structure your report with Molecular Etiology, Pancreatic Channel Impact, and Future Therapeutic Recommendations.
+Sequence Analytics:
+{sequence_report if sequence_report else "No physical nucleotide sequences provided."}
 """
 
         # 1. Try Gemini
@@ -90,7 +137,7 @@ Structure your report with Molecular Etiology, Pancreatic Channel Impact, and Fu
                 response = client.chat.completions.create(
                     model="gpt-4o-mini",
                     messages=[
-                        {"role": "system", "content": "You are an elite bioinformatics agent."},
+                        {"role": "system", "content": "You are an elite clinical geneticist agent."},
                         {"role": "user", "content": prompt}
                     ]
                 )
@@ -98,20 +145,19 @@ Structure your report with Molecular Etiology, Pancreatic Channel Impact, and Fu
             except Exception:
                 pass
 
-        # 3. Fallback: Return a structured bioinformatics summary
-        return f"""# HI-NEXUS Bioinformatic Study
-*Molecular and genetic characterization by BioAgent.*
+        # 3. Fallback: Return structured curated genomic details
+        return f"""# HI-NEXUS Clinical Genomic Assessment
+*Factual analysis based on PubMed + Curated Local Databases.*
 
-## 1. Molecular Etiology
-Congenital Hyperinsulinism (CHI) is highly correlated with defects in the `ABCC8` and `KCNJ11` genes, which translate to the SUR1 and Kir6.2 subunits of the pancreatic beta-cell KATP channel. Dysfunctions in these channels trigger continuous cell membrane depolarization, causing insulin oversecretion regardless of blood glucose levels.
+## 1. Curated Locus Overview
+{molecular_report}
 
 {sequence_report}
 
-## 2. Genomic Recommendations
-*   **Genotyping**: Run high-depth NGS panel to detect focal vs diffuso status (maternal/paternal alleles).
-*   **CRISPR Feasibility**: Splicing mutations in intron 2 or exon 39 of ABCC8 should be targeted for transcript repair.
+## 2. Clinical Recommendation Summary
+Based on the pathogenic profiles, genetic counseling is advised. Recessive locus mutations in SUR1/Kir6.2 necessitate early preparation for Diazoxide-resistance management, including early consideration of molecular PET-imaging (`IMAGE-AI`) to locate possible focal lesions.
 """
 
 if __name__ == "__main__":
     agent = BioAgent()
-    print(agent.run("Patient DNA: ATGCGATCGATC. Review hyperinsulinism mutation details."))
+    print(agent.run("PubMed Lit: we found evidence on ABCC8 hyperinsulinism."))

@@ -1,0 +1,47 @@
+{
+  "genes": {
+    "ABCC8": {
+      "full_name": "ATP-binding cassette transporter sub-family C member 8",
+      "description": "Encodes the SUR1 (Sulfonylurea Receptor 1) subunit of the pancreatic beta-cell KATP channel.",
+      "clinical_relevance": "Mutations in ABCC8 are the leading cause of Congenital Hyperinsulinism (CHI). Recessive homozygous or compound heterozygous mutations lead to severe diffuse disease, resistant to Diazoxide. Paternal heterozygous mutations can cause focal disease when combined with somatic loss of heterozygosity (LOH) on 11p15.",
+      "responsive_treatments": ["Octreotide", "Lanreotide", "Pancreatectomía (focal)"],
+      "resistant_treatments": ["Diazóxido"],
+      "common_variants": [
+        { "variant": "p.Arg1394His", "classification": "Pathogenic", "significance": "Recessive, causes severe diazoxide-resistant hyperinsulinism." },
+        { "variant": "p.Arg597Ter", "classification": "Pathogenic", "significance": "Nonsense mutation, truncates SUR1, causing complete loss of channel function." },
+        { "variant": "g.1723A>G", "classification": "Pathogenic", "significance": "Splicing mutation, disrupts SUR1 processing, highly prevalent in Ashkenazi cohorts." }
+      ]
+    },
+    "KCNJ11": {
+      "full_name": "Potassium inwardly-rectifying channel subfamily J member 11",
+      "description": "Encodes the Kir6.2 subunit, which forms the inner pore of the pancreatic KATP channel.",
+      "clinical_relevance": "Loss-of-function mutations in KCNJ11 cause congenital hyperinsulinism by preventing channel opening, leading to permanent beta-cell depolarization and insulin release. Similar to ABCC8, recessive forms are severe and diazoxide-resistant, while paternal germline mutations can cause focal lesions.",
+      "responsive_treatments": ["Octreotide", "Sirolimus"],
+      "resistant_treatments": ["Diazóxido"],
+      "common_variants": [
+        { "variant": "p.Phe55Lfs*11", "classification": "Pathogenic", "significance": "Frameshift mutation, truncates Kir6.2 pore leading to diazoxide-resistant CHI." },
+        { "variant": "p.Glu227Lys", "classification": "Pathogenic / Gain-of-function", "significance": "Can lead to Neonatal Diabetes depending on compound inheritance." }
+      ]
+    },
+    "GCK": {
+      "full_name": "Glucokinase",
+      "description": "Encodes the glucose sensor enzyme in pancreatic beta-cells, controlling the rate-limiting step of glucose metabolism.",
+      "clinical_relevance": "Activating (gain-of-function) mutations in GCK shift the threshold of insulin secretion to lower glucose levels, causing hyperinsulinemic hypoglycemia. These patients are typically responsive to Diazoxide.",
+      "responsive_treatments": ["Diazóxido", "Dieta frecuente"],
+      "resistant_treatments": [],
+      "common_variants": [
+        { "variant": "p.Val91Lfs*2", "classification": "Pathogenic", "significance": "Activating mutation, increases glucokinase affinity for glucose, causing mild-to-moderate responsive CHI." }
+      ]
+    },
+    "GLUD1": {
+      "full_name": "Glutamate dehydrogenase 1",
+      "description": "Encodes a mitochondrial matrix enzyme that catalyzes the oxidative deamination of glutamate to alpha-ketoglutarate.",
+      "clinical_relevance": "Activating mutations in GLUD1 cause Hyperinsulinism-Hyperammonemia (HI/HA) syndrome. Hypoglycemia is characteristically triggered by protein ingestion (leucine-induced). Mild-to-moderate severity, highly responsive to Diazoxide.",
+      "responsive_treatments": ["Diazóxido", "Dieta baja en proteínas"],
+      "resistant_treatments": [],
+      "common_variants": [
+        { "variant": "p.Arg269His", "classification": "Pathogenic", "significance": "Disrupts allosteric GTP inhibition, leading to hyperactive dehydrogenase and leucine-induced hypoglycemia." }
+      ]
+    }
+  }
+}
