@@ -31,7 +31,6 @@
             box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25);
             outline: none;
         }
-        /* Custom Tooltip */
         .tooltip {
             position: relative;
             display: inline-block;
@@ -80,7 +79,7 @@
             <div class="flex items-center space-x-3">
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                     <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span>
-                    Live Diagnostic Core
+                    Clean DDD Engine
                 </span>
             </div>
         </div>
@@ -100,6 +99,12 @@
                     </h3>
                     
                     <div class="space-y-4">
+                        <!-- Patient ID -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Patient ID (SQLite Key)</label>
+                            <input type="text" id="input-patient-id" value="PAT-001" class="w-full rounded-xl px-4 py-3 glass-input text-sm code-font">
+                        </div>
+
                         <!-- Variant Input with Autocomplete -->
                         <div class="relative">
                             <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Variant (HGVS)</label>
@@ -122,7 +127,7 @@
                         <!-- Age -->
                         <div>
                             <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Neonate Age (Days)</label>
-                            <input type="number" id="input-age" placeholder="e.g. 2" class="w-full rounded-xl px-4 py-3 glass-input text-sm">
+                            <input type="number" id="input-age" value="2" class="w-full rounded-xl px-4 py-3 glass-input text-sm">
                         </div>
 
                         <!-- Glucose -->
@@ -211,15 +216,14 @@
                             
                             <div class="space-y-4">
                                 <div class="flex items-center justify-between">
-                                    <span class="text-xs text-slate-400">Predicted Therapeutic Response</span>
-                                    <span id="txt-diazoxide-response" class="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-red-500/10 text-red-400 border border-red-500/20">-</span>
+                                    <span class="text-xs text-slate-400">Primary Clinical Assessment</span>
                                 </div>
 
-                                <p class="text-sm text-slate-300 bg-slate-900/60 p-3 rounded-xl border border-slate-800 font-medium" id="txt-diazoxide-action">-</p>
+                                <p class="text-sm text-slate-300 bg-slate-900/60 p-3 rounded-xl border border-slate-800 font-medium" id="txt-primary-action">-</p>
 
                                 <div id="surgery-indicator" class="hidden items-center text-xs text-red-400 bg-red-500/10 border border-red-500/20 px-3 py-2.5 rounded-xl font-bold">
                                     <span class="h-2 w-2 rounded-full bg-red-400 mr-2 animate-ping"></span>
-                                    ⚠️ Critical: Early surgical evaluation is recommended
+                                    ⚠️ Critical: Early surgical evaluation is indicated
                                 </div>
                             </div>
                         </div>
@@ -231,7 +235,10 @@
                         
                         <!-- 3. GENETICS CARD (ClinVar Normalisation) -->
                         <div class="glass-card rounded-3xl p-6 space-y-4">
-                            <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-widest">Genomic Locus & ClinVar Data</h4>
+                            <div class="flex justify-between items-center">
+                                <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-widest">Genomic Locus & ClinVar Data</h4>
+                                <span class="text-yellow-400 font-bold tracking-widest" id="txt-review-stars"></span>
+                            </div>
                             
                             <div class="bg-slate-950/40 border border-slate-800/80 rounded-2xl p-4 space-y-3">
                                 <div class="flex justify-between border-b border-slate-800/80 pb-2 text-xs">
@@ -243,11 +250,11 @@
                                     <span class="code-font font-bold text-indigo-400" id="txt-hgvs-p">-</span>
                                 </div>
                                 <div class="flex justify-between border-b border-slate-800/80 pb-2 text-xs">
-                                    <span class="text-slate-400">ClinVar Signficance</span>
-                                    <span class="font-bold text-slate-200" id="txt-clinvar-sig">-</span>
+                                    <span class="text-slate-400">ClinVar Pathogenicity</span>
+                                    <span class="font-bold text-slate-200 animate-pulse" id="txt-clinvar-sig">-</span>
                                 </div>
                                 <div class="flex justify-between text-xs">
-                                    <span class="text-slate-400">Review Panel Star Status</span>
+                                    <span class="text-slate-400">Review Star Status Details</span>
                                     <span class="text-pink-400 font-bold" id="txt-clinvar-review">-</span>
                                 </div>
                             </div>
@@ -256,8 +263,8 @@
                         <!-- 4. TIMELINE CHART -->
                         <div class="glass-card rounded-3xl p-6 flex flex-col justify-between">
                             <div>
-                                <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">Neonate Physiological Timeline</h4>
-                                <p class="text-[11px] text-slate-400">Biochemical trajectory from Day 1 to current assessment</p>
+                                <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">Neonate Physiological Timeline (SQLite Records)</h4>
+                                <p class="text-[11px] text-slate-400">Tracking historic glycemic events chronologically</p>
                             </div>
                             
                             <div class="h-44 w-full relative mt-4">
@@ -294,7 +301,7 @@
 
                         <!-- 6. EVIDENCE & REFERENCE PANEL -->
                         <div class="glass-card rounded-3xl p-6 space-y-4">
-                            <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-widest">Ranked Bibliographic Cites</h4>
+                            <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-widest">Ranked Bibliographic Cites (Decayed Decays)</h4>
                             
                             <div class="space-y-3" id="evidence-container">
                                 <!-- evidence citations -->
@@ -309,7 +316,6 @@
     </main>
 
     <script>
-        // Setup autocomplete triggers
         const inputVar = document.getElementById("input-variant");
         const autocomplete = document.getElementById("autocomplete-box");
 
@@ -337,6 +343,7 @@
         }
 
         async function triggerAnalysis() {
+            const patient_id = document.getElementById("input-patient-id").value.trim() || "PAT-001";
             const variant = inputVar.value.trim();
             const age = document.getElementById("input-age").value.trim();
             const glucose = document.getElementById("input-glucose").value;
@@ -348,8 +355,8 @@
             }
 
             try {
-                // Fetch from FastAPI REST Endpoint
-                const response = await fetch(`/analyze_patient?variant=${encodeURIComponent(variant)}&age=${age}&glucose=${glucose}&insulin=${insulin}`);
+                // REST route is mapped dynamically to app/api/routes.py
+                const response = await fetch(`/api/analyze_patient?variant=${encodeURIComponent(variant)}&age=${age}&glucose=${glucose}&insulin=${insulin}&patient_id=${patient_id}`);
                 const data = await response.json();
 
                 if (data.error) {
@@ -377,20 +384,11 @@
                 document.getElementById("txt-confidence").innerText = confidencePct + "%";
                 document.getElementById("bar-confidence").style.width = confidencePct + "%";
 
-                // Render Protocol Decision Layer
-                const expectedResp = data.chi_protocol.treatment.diazoxide.expected_response;
-                const respBadge = document.getElementById("txt-diazoxide-response");
-                respBadge.innerText = expectedResp;
-                if (expectedResp === "Very low" || expectedResp === "Low") {
-                    respBadge.className = "px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-red-500/10 text-red-400 border border-red-500/20";
-                } else {
-                    respBadge.className = "px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
-                }
-
-                document.getElementById("txt-diazoxide-action").innerText = data.chi_protocol.treatment.diazoxide.action;
+                // Actions Layer
+                document.getElementById("txt-primary-action").innerText = data.actions.primary;
 
                 const surgeryInd = document.getElementById("surgery-indicator");
-                if (data.chi_protocol.treatment.surgery.indicated) {
+                if (data.actions.surgery) {
                     surgeryInd.classList.remove("hidden");
                     surgeryInd.classList.add("flex");
                 } else {
@@ -398,27 +396,30 @@
                     surgeryInd.classList.add("hidden");
                 }
 
-                // Render Genomics Layer
-                const primaryVariant = data.variants[0] || {};
-                document.getElementById("txt-hgvs-c").innerText = primaryVariant.hgvs_c || "-";
-                document.getElementById("txt-hgvs-p").innerText = primaryVariant.hgvs_p || "-";
-                document.getElementById("txt-clinvar-sig").innerText = primaryVariant.clinical_significance || "-";
-                document.getElementById("txt-clinvar-review").innerText = primaryVariant.review_status || "-";
+                // Star Rating logic mapping 5 stars
+                const starBox = document.getElementById("txt-review-stars");
+                starBox.innerText = "⭐".repeat(data.genomics.review_stars);
 
-                // Render Flowsheet details (PET scan & Second lines)
+                // Genomics Layer
+                document.getElementById("txt-hgvs-c").innerText = data.genomics.hgvs_c || "-";
+                document.getElementById("txt-hgvs-p").innerText = data.genomics.hgvs_p || "-";
+                document.getElementById("txt-clinvar-sig").innerText = data.genomics.pathogenicity || "-";
+                document.getElementById("txt-clinvar-review").innerText = data.genomics.review_status || "-";
+
+                // Flowsheet (PET scan & Second lines)
                 const petBadge = document.getElementById("badge-pet");
-                if (data.chi_protocol.imaging.PET_scan) {
+                if (data.actions.imaging_indicated) {
                     petBadge.innerText = "Highly Indicated";
                     petBadge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-red-500/10 text-red-400 border border-red-500/20";
                 } else {
                     petBadge.innerText = "Deferred";
                     petBadge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-slate-800 text-slate-400 border border-slate-700";
                 }
-                document.getElementById("txt-pet-reason").innerText = data.chi_protocol.imaging.reason || "Not indicated based on clinical severity.";
+                document.getElementById("txt-pet-reason").innerText = data.actions.imaging_reason;
 
                 const secondLineBox = document.getElementById("box-second-line");
                 secondLineBox.innerHTML = "";
-                const secondLineList = data.chi_protocol.treatment.second_line || [];
+                const secondLineList = data.actions.secondary || [];
                 if (secondLineList.length > 0) {
                     secondLineList.forEach(item => {
                         const badge = document.createElement("span");
@@ -429,11 +430,11 @@
                 } else {
                     const fallback = document.createElement("span");
                     fallback.className = "text-slate-400 italic text-[11px]";
-                    fallback.innerText = "None (Diazoxide responsive path active)";
+                    fallback.innerText = "None (Diazoxide response path active)";
                     secondLineBox.appendChild(fallback);
                 }
 
-                // Render Evidence citations
+                // Evidence list
                 const evidenceContainer = document.getElementById("evidence-container");
                 evidenceContainer.innerHTML = "";
                 (data.evidence || []).forEach(paper => {
@@ -443,27 +444,26 @@
                         <div class="space-y-1">
                             <p class="text-[11px] font-bold text-slate-200 line-clamp-2">${paper.title}</p>
                             <p class="text-[9px] text-slate-400">${paper.journal} • ${paper.year}</p>
+                            <p class="text-[9px] text-indigo-400 italic font-medium">${paper.reason}</p>
                         </div>
                         <span class="bg-indigo-500/15 text-indigo-400 font-mono text-[9px] px-1.5 py-0.5 rounded border border-indigo-500/20 font-bold shrink-0">Sc: ${paper.score}</span>
                     `;
                     evidenceContainer.appendChild(item);
                 });
 
-                // Render timeline canvas
+                // Draw SQLite persistent timeline history
                 drawTimelineChart(data.timeline || []);
 
             } catch (err) {
                 console.error(err);
-                alert("Error calling diagnostic API. Please make sure the backend server is running.");
+                alert("Error calling clinical API endpoint. Please check connection.");
             }
         }
 
-        // Lightweight HTML Canvas Dual-Curve line charting engine
         function drawTimelineChart(timeline) {
             const canvas = document.getElementById("timelineCanvas");
             if (!canvas) return;
 
-            // Handle retina displays
             const dpr = window.devicePixelRatio || 1;
             const rect = canvas.getBoundingClientRect();
             canvas.width = rect.width * dpr;
@@ -475,12 +475,9 @@
             const width = rect.width;
             const height = rect.height;
 
-            // Clear
             ctx.clearRect(0, 0, width, height);
-
             if (timeline.length === 0) return;
 
-            // Margins
             const padLeft = 35;
             const padRight = 15;
             const padTop = 15;
@@ -489,7 +486,6 @@
             const chartWidth = width - padLeft - padRight;
             const chartHeight = height - padTop - padBottom;
 
-            // Calculate scales
             const glucoseVals = timeline.map(t => t.glucose);
             const insulinVals = timeline.map(t => t.insulin);
 
@@ -499,7 +495,7 @@
             const maxI = Math.max(...insulinVals, 40);
             const minI = Math.min(...insulinVals, 0);
 
-            // Draw grid lines
+            // Grid lines
             ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
             ctx.lineWidth = 1;
             for (let i = 0; i <= 3; i++) {
@@ -510,20 +506,21 @@
                 ctx.stroke();
             }
 
-            // Draw timeline labels
+            // Labels
             ctx.fillStyle = "#94a3b8";
             ctx.font = "bold 9px Outfit";
             ctx.textAlign = "center";
             timeline.forEach((t, index) => {
-                const x = padLeft + (chartWidth / (timeline.length - 1)) * index;
-                ctx.fillText(t.day, x, height - 8);
+                const x = padLeft + (chartWidth / Math.max(1, timeline.length - 1)) * index;
+                ctx.fillText("Day " + t.day, x, height - 8);
             });
 
-            // Draw Glucose line (Red)
+            // Glucose line (Red)
             ctx.beginPath();
             timeline.forEach((t, index) => {
-                const x = padLeft + (chartWidth / (timeline.length - 1)) * index;
-                const y = padTop + chartHeight - ((t.glucose - minG) / (maxG - minG)) * chartHeight;
+                const x = padLeft + (chartWidth / Math.max(1, timeline.length - 1)) * index;
+                const denominator = (maxG - minG) || 1;
+                const y = padTop + chartHeight - ((t.glucose - minG) / denominator) * chartHeight;
                 if (index === 0) ctx.moveTo(x, y);
                 else ctx.lineTo(x, y);
             });
@@ -532,12 +529,13 @@
             ctx.shadowColor = "rgba(239, 68, 68, 0.35)";
             ctx.shadowBlur = 10;
             ctx.stroke();
-            ctx.shadowBlur = 0; // reset
+            ctx.shadowBlur = 0;
 
-            // Draw Glucose points
+            // Glucose points
             timeline.forEach((t, index) => {
-                const x = padLeft + (chartWidth / (timeline.length - 1)) * index;
-                const y = padTop + chartHeight - ((t.glucose - minG) / (maxG - minG)) * chartHeight;
+                const x = padLeft + (chartWidth / Math.max(1, timeline.length - 1)) * index;
+                const denominator = (maxG - minG) || 1;
+                const y = padTop + chartHeight - ((t.glucose - minG) / denominator) * chartHeight;
                 ctx.beginPath();
                 ctx.arc(x, y, 4, 0, Math.PI * 2);
                 ctx.fillStyle = "#ef4444";
@@ -547,11 +545,12 @@
                 ctx.stroke();
             });
 
-            // Draw Insulin line (Blue)
+            // Insulin line (Blue)
             ctx.beginPath();
             timeline.forEach((t, index) => {
-                const x = padLeft + (chartWidth / (timeline.length - 1)) * index;
-                const y = padTop + chartHeight - ((t.insulin - minI) / (maxI - minI)) * chartHeight;
+                const x = padLeft + (chartWidth / Math.max(1, timeline.length - 1)) * index;
+                const denominator = (maxI - minI) || 1;
+                const y = padTop + chartHeight - ((t.insulin - minI) / denominator) * chartHeight;
                 if (index === 0) ctx.moveTo(x, y);
                 else ctx.lineTo(x, y);
             });
@@ -560,12 +559,13 @@
             ctx.shadowColor = "rgba(59, 130, 246, 0.35)";
             ctx.shadowBlur = 10;
             ctx.stroke();
-            ctx.shadowBlur = 0; // reset
+            ctx.shadowBlur = 0;
 
-            // Draw Insulin points
+            // Insulin points
             timeline.forEach((t, index) => {
-                const x = padLeft + (chartWidth / (timeline.length - 1)) * index;
-                const y = padTop + chartHeight - ((t.insulin - minI) / (maxI - minI)) * chartHeight;
+                const x = padLeft + (chartWidth / Math.max(1, timeline.length - 1)) * index;
+                const denominator = (maxI - minI) || 1;
+                const y = padTop + chartHeight - ((t.insulin - minI) / denominator) * chartHeight;
                 ctx.beginPath();
                 ctx.arc(x, y, 4, 0, Math.PI * 2);
                 ctx.fillStyle = "#3b82f6";
@@ -575,7 +575,7 @@
                 ctx.stroke();
             });
 
-            // Draw custom legends
+            // Legends
             ctx.fillStyle = "#ef4444";
             ctx.fillRect(padLeft, padTop - 12, 8, 4);
             ctx.fillStyle = "#94a3b8";
