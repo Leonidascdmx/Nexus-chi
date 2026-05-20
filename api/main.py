@@ -1,4 +1,6 @@
+import os
 from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
 from orchestrator.main_orchestrator import MainOrchestrator
 from tools.patient_model import Patient
 
@@ -7,7 +9,14 @@ orch = MainOrchestrator()
 
 @app.get("/")
 def root():
-    return {"status": "HI-NEXUS clinical API running"}
+    """
+    Serves the beautiful premium HI-NEXUS clinical visual dashboard portal.
+    """
+    html_path = os.path.join(os.path.dirname(__file__), "index.html")
+    if os.path.exists(html_path):
+        with open(html_path, "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    return {"status": "HI-NEXUS clinical API running (index.html not found)"}
 
 @app.get("/analyze")
 def analyze(gene: str):
