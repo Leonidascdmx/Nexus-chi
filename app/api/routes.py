@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Query, Body
 from app.services.clinical_swarm import ClinicalSwarm
-from app.models.clinical_models import ClinicalResponse, Patient
+from app.models.clinical_models import ClinicalResponse, Patient, GenomicDiagnosisResponse
 from app.db.patient_repository import save_agent_knowledge
 
 router = APIRouter()
@@ -25,6 +25,17 @@ async def analyze_patient(
         glucose=glucose,
         insulin=insulin
     )
+    return result
+
+@router.get("/diagnose", response_model=GenomicDiagnosisResponse)
+async def diagnose_genomic_variant(
+    variant: str = Query(..., description="Genetic variant HGVS locus string, e.g. NM_000525.3(KCNJ11):c.67A>G")
+):
+    """
+    Asynchronously executes the M1 Genomic Diagnosis pipeline.
+    Queries ClinVar & gnomAD exome frequencies, ranks PubMed literature, and explains molecular mechanisms.
+    """
+    result = await swarm_orchestrator.run_genomic_diagnosis(variant_str=variant)
     return result
 
 @router.post("/feedback")

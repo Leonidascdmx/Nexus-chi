@@ -1,6 +1,6 @@
 import asyncio
 from app.models.clinical_models import (
-    ClinicalResponse, ClinicalSummary, ClinicalActions, GenomicVariant
+    ClinicalResponse, ClinicalSummary, ClinicalActions, GenomicVariant, GenomicDiagnosisResponse
 )
 from app.domain.genomics.variant_parser import parse_variant
 from app.domain.genomics.variant_interpreter import interpret_genomic_variant
@@ -9,6 +9,7 @@ from app.domain.clinical.diazoxide import evaluate_diazoxide_response
 from app.domain.scoring.evidence_ranker import rank_papers
 from app.infrastructure.clinvar.clinvar_client import fetch_clinvar_data
 from app.infrastructure.pubmed.pubmed_client import fetch_pubmed_papers
+from app.infrastructure.myvariant.myvariant_client import query_myvariant_info
 from app.db.patient_repository import (
     save_patient_event, get_patient_history, get_agent_knowledge, save_agent_knowledge
 )
@@ -71,7 +72,7 @@ class ClinicalSwarm:
         # Evaluate expected Diazoxide response & clinical pathway deterministically
         diazoxide_response = evaluate_diazoxide_response(variant_parsed, glucose, insulin)
 
-        # Step 3: SQLite patient trajectory event logging
+        # Step-3: SQLite patient trajectory event logging
         treatment_applied = diazoxide_response["action"]
         save_patient_event(
             patient_id=patient_id,
@@ -137,4 +138,55 @@ class ClinicalSwarm:
             genomics=genomics,
             evidence=ranked_papers[:3],
             timeline=historical_records
+        )
+
+    async def run_genomic_diagnosis(self, variant_str: str) -> GenomicDiagnosisResponse:
+        """
+        Coordinates M1 Genomic Diagnosis pipeline.
+        Validates variant -> Queries MyVariant (ClinVar + gnomAD) & PubMed -> Explains mechanism.
+        """
+        loop = asyncio.get_event_loop()
+
+        # Step 1: Query annotations and literature in parallel
+        myvariant_task = loop.run_in_executor(None, query_myvariant_info, variant_str)
+        
+        # Parse variant structure for gene mapping
+        variant_parsed = parse_variant(variant_str)
+        # Seed gene fallback based on standard input patterns
+        temp_gene = "unknown"
+        if "KCNJ11" in variant_str.upper():
+            temp_gene = "KCNJ11"
+        elif "ABCC8" in variant_str.upper():
+            temp_gene = "ABCC8"
+
+        pubmed_task = loop.run_in_executor(None, fetch_pubmed_papers, temp_gene)
+
+        myvariant_res, pubmed_res = await asyncio.gather(myvariant_task, pubmed_task)
+
+        # Step 2: Combine annotations and parse fields
+        gene = myvariant_res.get("gene", temp_gene).upper()
+        clinical_sig = myvariant_res.get("clinical_significance", "Uncertain significance")
+        allele_freq = myvariant_res.get("gnomad_allele_freq", 0.0)
+        clinvar_assoc = myvariant_res.get("clinvar_association", "No custom mapping recorded.")
+
+        # Step 3: Scientific literature ranking
+        variant_parsed["gene"] = gene
+        variant_parsed["pathogenicity"] = clinical_sig
+        ranked_papers = rank_papers(pubmed_res, gene, variant_parsed)
+
+        # Step 4: AI narrative explanation synthesis
+        narrative = self.bio_agent.generate_narrative_explanation(
+            variant=variant_str,
+            gene=gene,
+            pathogenicity=clinical_sig
+        )
+
+        return GenomicDiagnosisResponse(
+            variant=variant_str,
+            gene=gene,
+            clinical_significance=clinical_sig,
+            gnomad_allele_freq=allele_freq,
+            clinvar_association=clinvar_assoc,
+            evidence=ranked_papers[:3],
+            interpretation_narrative=narrative
         )

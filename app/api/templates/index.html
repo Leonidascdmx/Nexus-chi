@@ -79,7 +79,7 @@
             <div class="flex items-center space-x-3">
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                     <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span>
-                    Clean DDD Engine
+                    Nivel 10 Swarm active
                 </span>
             </div>
         </div>
@@ -87,30 +87,35 @@
 
     <main class="max-w-7xl mx-auto px-6 mt-8">
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- LEFT COLUMN: Patient Entry Panel -->
+            <!-- LEFT COLUMN: Patient & Variant Entry Panel -->
             <div class="lg:col-span-1 space-y-6">
                 <div class="glass-card rounded-3xl p-6 relative overflow-hidden">
                     <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-indigo-500 to-pink-500"></div>
-                    <h3 class="text-lg font-bold text-white mb-5 flex items-center">
-                        <svg class="h-5 w-5 mr-2 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                        </svg>
-                        Clinical Patient Entry
-                    </h3>
                     
-                    <div class="space-y-4">
-                        <!-- Patient ID -->
+                    <!-- Tabs switcher -->
+                    <div class="flex border-b border-slate-800 mb-6 text-xs font-bold uppercase tracking-wider">
+                        <button id="btn-tab-patient" onclick="switchTab('patient')" class="flex-1 py-3 text-center border-b-2 border-indigo-500 text-indigo-400 transition-all">
+                            Patient Flowsheet
+                        </button>
+                        <button id="btn-tab-genomic" onclick="switchTab('genomic')" class="flex-1 py-3 text-center text-slate-400 border-b-2 border-transparent hover:text-slate-200 transition-all">
+                            M1 Genomic Locus
+                        </button>
+                    </div>
+
+                    <!-- TAB 1: PEDIATRIC PATIENT FLOWSHEET FORM -->
+                    <div id="form-patient" class="space-y-4">
+                        <h3 class="text-sm font-bold text-white mb-2 uppercase tracking-wide text-slate-300">Neonate Case Assessment</h3>
+                        
                         <div>
                             <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Patient ID (SQLite Key)</label>
                             <input type="text" id="input-patient-id" value="PAT-001" class="w-full rounded-xl px-4 py-3 glass-input text-sm code-font">
                         </div>
 
-                        <!-- Variant Input with Autocomplete -->
                         <div class="relative">
-                            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Variant (HGVS)</label>
+                            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">HGVS cDNA / Protein Variant</label>
                             <input type="text" id="input-variant" placeholder="e.g. c.3992-9G>A" class="w-full rounded-xl px-4 py-3 glass-input text-sm code-font" autocomplete="off">
                             
-                            <!-- Autocomplete dropdown -->
+                            <!-- Autocomplete suggested options -->
                             <div id="autocomplete-box" class="absolute left-0 right-0 mt-2 bg-slate-900 border border-slate-700 rounded-xl overflow-hidden shadow-2xl z-20 hidden">
                                 <div class="p-2 border-b border-slate-800 text-xs text-slate-400 font-semibold uppercase">Suggested Loci</div>
                                 <button onclick="selectVariant('c.3992-9G>A')" class="w-full text-left px-4 py-3 hover:bg-indigo-950/40 text-slate-200 text-xs code-font border-b border-slate-800 flex justify-between">
@@ -124,13 +129,11 @@
                             </div>
                         </div>
 
-                        <!-- Age -->
                         <div>
                             <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Neonate Age (Days)</label>
                             <input type="number" id="input-age" value="2" class="w-full rounded-xl px-4 py-3 glass-input text-sm">
                         </div>
 
-                        <!-- Glucose -->
                         <div>
                             <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 flex justify-between">
                                 <span>Glucose Level</span>
@@ -139,7 +142,6 @@
                             <input type="range" id="input-glucose" min="20" max="100" value="35" oninput="updateGlucoseLabel(this.value)" class="w-full accent-indigo-500 bg-slate-800 h-1.5 rounded-lg appearance-none cursor-pointer">
                         </div>
 
-                        <!-- Insulin -->
                         <div>
                             <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 flex justify-between">
                                 <span>Insulin Concentration</span>
@@ -148,7 +150,6 @@
                             <input type="range" id="input-insulin" min="1" max="40" value="12" oninput="updateInsulinLabel(this.value)" class="w-full accent-indigo-500 bg-slate-800 h-1.5 rounded-lg appearance-none cursor-pointer">
                         </div>
 
-                        <!-- Trigger Button -->
                         <button onclick="triggerAnalysis()" class="w-full bg-gradient-to-r from-indigo-600 via-indigo-700 to-pink-600 hover:from-indigo-500 hover:to-pink-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-indigo-500/10 transition-all flex items-center justify-center space-x-2 mt-6">
                             <span>Analyze Genotype-Phenotype</span>
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -156,9 +157,46 @@
                             </svg>
                         </button>
                     </div>
+
+                    <!-- TAB 2: M1 GENOMIC DIAGNOSIS FORM -->
+                    <div id="form-genomic" class="space-y-4 hidden">
+                        <h3 class="text-sm font-bold text-white mb-2 uppercase tracking-wide text-slate-300">MyVariant & gnomAD Search</h3>
+                        
+                        <div class="relative">
+                            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Variant coordinates (HGVS Ref)</label>
+                            <input type="text" id="input-diagnose-var" placeholder="e.g. NM_000525.3(KCNJ11):c.67A>G" class="w-full rounded-xl px-4 py-3 glass-input text-sm code-font" autocomplete="off">
+                            
+                            <!-- Autocomplete dropdown for M1 -->
+                            <div id="diagnose-autocomplete" class="absolute left-0 right-0 mt-2 bg-slate-900 border border-slate-700 rounded-xl overflow-hidden shadow-2xl z-20 hidden">
+                                <div class="p-2 border-b border-slate-800 text-xs text-slate-400 font-semibold uppercase">Suggested Loci</div>
+                                <button onclick="selectDiagnoseVar('NM_000525.3(KCNJ11):c.67A>G')" class="w-full text-left px-4 py-3 hover:bg-indigo-950/40 text-slate-200 text-xs code-font border-b border-slate-800 flex justify-between">
+                                    <span>c.67A&gt;G (KCNJ11)</span>
+                                    <span class="text-red-400 font-sans uppercase">Pathogenic</span>
+                                </button>
+                                <button onclick="selectDiagnoseVar('NM_000525.3(KCNJ11):c.67A>A')" class="w-full text-left px-4 py-3 hover:bg-indigo-950/40 text-slate-200 text-xs code-font border-b border-slate-800 flex justify-between">
+                                    <span>c.67A&gt;A (KCNJ11)</span>
+                                    <span class="text-emerald-400 font-sans uppercase">Benign</span>
+                                </button>
+                                <button onclick="selectDiagnoseVar('c.3992-9G>A')" class="w-full text-left px-4 py-3 hover:bg-indigo-950/40 text-slate-200 text-xs code-font flex justify-between">
+                                    <span>c.3992-9G&gt;A (ABCC8)</span>
+                                    <span class="text-pink-400 font-sans uppercase">Likely Pathogenic</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <p class="text-[11px] text-slate-400 leading-relaxed">Queries MyVariant.info directly in parallel for live gnomAD allele frequencies and ClinVar associations, generating a full molecular narrative with BioAgent.</p>
+
+                        <button onclick="triggerDiagnose()" class="w-full bg-gradient-to-r from-indigo-600 via-indigo-700 to-pink-600 hover:from-indigo-500 hover:to-pink-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-indigo-500/10 transition-all flex items-center justify-center space-x-2 mt-6">
+                            <span>Diagnose Genomic Variant Locus</span>
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </button>
+                    </div>
+
                 </div>
 
-                <!-- Reference Card -->
+                <!-- Reference tips -->
                 <div class="glass-card rounded-3xl p-6 text-xs text-slate-400 space-y-3">
                     <h4 class="font-bold text-slate-200">HI-NEXUS CLINICAL TIPS</h4>
                     <p>Enter an HGVS variant standard locus matching standard Congenital Hyperinsulinism mutations to predict clinical Diazoxide response dynamics.</p>
@@ -183,13 +221,13 @@
                     <p class="text-slate-400 max-w-md mx-auto text-sm">Select suggestions or input custom parameters and click "Analyze Genotype-Phenotype" to load the structured molecular and clinical decision report.</p>
                 </div>
 
-                <!-- Analysis results -->
+                <!-- TAB 1 RESULTS: Case Analysis -->
                 <div id="results-box" class="space-y-6 hidden">
                     
                     <!-- Grid: Diagnosis Summary & Treatment Actions -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         
-                        <!-- 1. DIAGNOSIS CARD -->
+                        <!-- DIAGNOSIS CARD -->
                         <div class="glass-card rounded-3xl p-6 relative overflow-hidden border-l-4 border-red-500">
                             <span class="absolute top-4 right-4 bg-red-500/10 text-red-400 border border-red-500/25 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase" id="badge-severity">High Severity</span>
                             <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">Genotype Phenotype Assessment</h4>
@@ -210,7 +248,7 @@
                             </div>
                         </div>
 
-                        <!-- 2. CLINICAL PROTOCOL (DECISION PATH) -->
+                        <!-- CLINICAL PROTOCOL (DECISION PATH) -->
                         <div class="glass-card rounded-3xl p-6 border-l-4 border-indigo-500">
                             <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">Diazoxide Protocol Decision</h4>
                             
@@ -230,10 +268,10 @@
 
                     </div>
 
-                    <!-- Grid: 3. GENETICS PANEL & 4. CLINICAL TIMELINE -->
+                    <!-- Grid: GENETICS PANEL & CLINICAL TIMELINE -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         
-                        <!-- 3. GENETICS CARD (ClinVar Normalisation) -->
+                        <!-- GENETICS CARD (ClinVar Normalisation) -->
                         <div class="glass-card rounded-3xl p-6 space-y-4">
                             <div class="flex justify-between items-center">
                                 <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-widest">Genomic Locus & ClinVar Data</h4>
@@ -260,7 +298,7 @@
                             </div>
                         </div>
 
-                        <!-- 4. TIMELINE CHART -->
+                        <!-- TIMELINE CHART -->
                         <div class="glass-card rounded-3xl p-6 flex flex-col justify-between">
                             <div>
                                 <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">Neonate Physiological Timeline (SQLite Records)</h4>
@@ -274,10 +312,10 @@
 
                     </div>
 
-                    <!-- Grid: 5. SCIENTIFIC EVIDENCE ENGINE & 6. FLOWSHEET ACTIONS -->
+                    <!-- Grid: SCIENTIFIC EVIDENCE ENGINE & FLOWSHEET ACTIONS -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         
-                        <!-- 5. CLINICAL DECISION FLOWSHEET DETAILS -->
+                        <!-- CLINICAL DECISION FLOWSHEET DETAILS -->
                         <div class="glass-card rounded-3xl p-6 space-y-4">
                             <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-widest">Guideline-Directed Care Path</h4>
                             
@@ -299,7 +337,7 @@
                             </div>
                         </div>
 
-                        <!-- 6. EVIDENCE & REFERENCE PANEL -->
+                        <!-- EVIDENCE & REFERENCE PANEL -->
                         <div class="glass-card rounded-3xl p-6 space-y-4">
                             <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-widest">Ranked Bibliographic Cites (Decayed Decays)</h4>
                             
@@ -311,6 +349,76 @@
                     </div>
 
                 </div>
+
+                <!-- TAB 2 RESULTS: M1 Genomic Diagnosis -->
+                <div id="genomic-results-box" class="space-y-6 hidden">
+                    
+                    <!-- Locus summary grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        
+                        <!-- ClinVar & gnomAD results card -->
+                        <div class="glass-card rounded-3xl p-6 border-l-4 border-pink-500 space-y-4">
+                            <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-widest">M1 Annotation Data</h4>
+                            
+                            <h3 class="text-2xl font-bold text-white tracking-tight" id="txt-m1-var">-</h3>
+
+                            <div class="bg-slate-950/40 border border-slate-800/80 rounded-2xl p-4 space-y-3 text-xs">
+                                <div class="flex justify-between border-b border-slate-800/80 pb-2">
+                                    <span class="text-slate-400">Associated Gene</span>
+                                    <span class="code-font font-bold text-indigo-400" id="txt-m1-gene">-</span>
+                                </div>
+                                <div class="flex justify-between border-b border-slate-800/80 pb-2">
+                                    <span class="text-slate-400">ClinVar Significado Clínico</span>
+                                    <span class="font-bold text-slate-200" id="txt-m1-sig">-</span>
+                                </div>
+                                <div class="flex justify-between border-b border-slate-800/80 pb-2">
+                                    <span class="text-slate-400">gnomAD Allele Frequency</span>
+                                    <span class="code-font font-bold text-pink-400" id="txt-m1-freq">0.0</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-400">Annotation Status</span>
+                                    <span class="text-emerald-400 font-bold" id="txt-m1-status">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ClinVar Association & Association Details -->
+                        <div class="glass-card rounded-3xl p-6 border-l-4 border-indigo-500 flex flex-col justify-between">
+                            <div>
+                                <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">ClinVar Disease Association</h4>
+                                <p class="text-sm text-slate-300 bg-slate-900/60 p-4 rounded-xl border border-slate-800 font-medium" id="txt-m1-assoc">-</p>
+                            </div>
+                            <p class="text-[10px] text-slate-400 mt-3">ClinVar database association index mapped according to standard E-utility filters.</p>
+                        </div>
+
+                    </div>
+
+                    <!-- AI Narrative mechanism & References -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        
+                        <!-- BioAgent Mechanism Narrative Card -->
+                        <div class="glass-card rounded-3xl p-6 space-y-4">
+                            <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-widest">BioAgent Narrative Interpretation</h4>
+                            
+                            <div class="bg-slate-950/40 border border-slate-800/80 rounded-2xl p-4 text-xs text-slate-300 leading-relaxed space-y-2">
+                                <p class="font-bold text-indigo-400">Pathophysiological Mechanism Explanation:</p>
+                                <p id="txt-m1-narrative" class="italic">-</p>
+                            </div>
+                        </div>
+
+                        <!-- Literature references -->
+                        <div class="glass-card rounded-3xl p-6 space-y-4">
+                            <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-widest">Decayed Decays PubMed Citations</h4>
+                            
+                            <div class="space-y-3" id="m1-evidence-container">
+                                <!-- citations -->
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
             </div>
         </div>
     </main>
@@ -319,13 +427,24 @@
         const inputVar = document.getElementById("input-variant");
         const autocomplete = document.getElementById("autocomplete-box");
 
+        const inputDiagnoseVar = document.getElementById("input-diagnose-var");
+        const diagnoseAutocomplete = document.getElementById("diagnose-autocomplete");
+
+        // Autocomplete event listeners
         inputVar.addEventListener("focus", () => {
             autocomplete.classList.remove("hidden");
+        });
+
+        inputDiagnoseVar.addEventListener("focus", () => {
+            diagnoseAutocomplete.classList.remove("hidden");
         });
 
         document.addEventListener("click", (e) => {
             if (!inputVar.contains(e.target) && !autocomplete.contains(e.target)) {
                 autocomplete.classList.add("hidden");
+            }
+            if (!inputDiagnoseVar.contains(e.target) && !diagnoseAutocomplete.contains(e.target)) {
+                diagnoseAutocomplete.classList.add("hidden");
             }
         });
 
@@ -334,12 +453,44 @@
             autocomplete.classList.add("hidden");
         }
 
+        function selectDiagnoseVar(val) {
+            inputDiagnoseVar.value = val;
+            diagnoseAutocomplete.classList.add("hidden");
+        }
+
         function updateGlucoseLabel(val) {
             document.getElementById("label-glucose").innerText = val + " mg/dL";
         }
 
         function updateInsulinLabel(val) {
             document.getElementById("label-insulin").innerText = val + " µU/mL";
+        }
+
+        function switchTab(mode) {
+            const btnPatient = document.getElementById("btn-tab-patient");
+            const btnGenomic = document.getElementById("btn-tab-genomic");
+            const formPatient = document.getElementById("form-patient");
+            const formGenomic = document.getElementById("form-genomic");
+
+            const resultsBox = document.getElementById("results-box");
+            const genomicResultsBox = document.getElementById("genomic-results-box");
+            const welcome = document.getElementById("welcome-placeholder");
+
+            welcome.classList.remove("hidden");
+            resultsBox.classList.add("hidden");
+            genomicResultsBox.classList.add("hidden");
+
+            if (mode === 'patient') {
+                btnPatient.className = "flex-1 py-3 text-center border-b-2 border-indigo-500 text-indigo-400 transition-all";
+                btnGenomic.className = "flex-1 py-3 text-center text-slate-400 border-b-2 border-transparent hover:text-slate-200 transition-all";
+                formPatient.classList.remove("hidden");
+                formGenomic.classList.add("hidden");
+            } else {
+                btnGenomic.className = "flex-1 py-3 text-center border-b-2 border-indigo-500 text-indigo-400 transition-all";
+                btnPatient.className = "flex-1 py-3 text-center text-slate-400 border-b-2 border-transparent hover:text-slate-200 transition-all";
+                formGenomic.classList.remove("hidden");
+                formPatient.classList.add("hidden");
+            }
         }
 
         async function triggerAnalysis() {
@@ -355,7 +506,6 @@
             }
 
             try {
-                // REST route is mapped dynamically to app/api/routes.py
                 const response = await fetch(`/api/analyze_patient?variant=${encodeURIComponent(variant)}&age=${age}&glucose=${glucose}&insulin=${insulin}&patient_id=${patient_id}`);
                 const data = await response.json();
 
@@ -364,9 +514,9 @@
                     return;
                 }
 
-                // Render Summary Layer
                 document.getElementById("welcome-placeholder").classList.add("hidden");
                 document.getElementById("results-box").classList.remove("hidden");
+                document.getElementById("genomic-results-box").classList.add("hidden");
 
                 document.getElementById("txt-diagnosis").innerText = data.summary.diagnosis;
                 document.getElementById("txt-gene").innerText = data.summary.gene;
@@ -384,7 +534,6 @@
                 document.getElementById("txt-confidence").innerText = confidencePct + "%";
                 document.getElementById("bar-confidence").style.width = confidencePct + "%";
 
-                // Actions Layer
                 document.getElementById("txt-primary-action").innerText = data.actions.primary;
 
                 const surgeryInd = document.getElementById("surgery-indicator");
@@ -396,17 +545,14 @@
                     surgeryInd.classList.add("hidden");
                 }
 
-                // Star Rating logic mapping 5 stars
                 const starBox = document.getElementById("txt-review-stars");
                 starBox.innerText = "⭐".repeat(data.genomics.review_stars);
 
-                // Genomics Layer
                 document.getElementById("txt-hgvs-c").innerText = data.genomics.hgvs_c || "-";
                 document.getElementById("txt-hgvs-p").innerText = data.genomics.hgvs_p || "-";
                 document.getElementById("txt-clinvar-sig").innerText = data.genomics.pathogenicity || "-";
                 document.getElementById("txt-clinvar-review").innerText = data.genomics.review_status || "-";
 
-                // Flowsheet (PET scan & Second lines)
                 const petBadge = document.getElementById("badge-pet");
                 if (data.actions.imaging_indicated) {
                     petBadge.innerText = "Highly Indicated";
@@ -434,7 +580,6 @@
                     secondLineBox.appendChild(fallback);
                 }
 
-                // Evidence list
                 const evidenceContainer = document.getElementById("evidence-container");
                 evidenceContainer.innerHTML = "";
                 (data.evidence || []).forEach(paper => {
@@ -451,12 +596,63 @@
                     evidenceContainer.appendChild(item);
                 });
 
-                // Draw SQLite persistent timeline history
                 drawTimelineChart(data.timeline || []);
 
             } catch (err) {
                 console.error(err);
                 alert("Error calling clinical API endpoint. Please check connection.");
+            }
+        }
+
+        async function triggerDiagnose() {
+            const variant = document.getElementById("input-diagnose-var").value.trim();
+
+            if (!variant) {
+                alert("Please enter a variant coordinates HGVS reference (e.g. NM_000525.3(KCNJ11):c.67A>G).");
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/diagnose?variant=${encodeURIComponent(variant)}`);
+                const data = await response.json();
+
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+
+                document.getElementById("welcome-placeholder").classList.add("hidden");
+                document.getElementById("results-box").classList.add("hidden");
+                document.getElementById("genomic-results-box").classList.remove("hidden");
+
+                document.getElementById("txt-m1-var").innerText = data.variant;
+                document.getElementById("txt-m1-gene").innerText = data.gene;
+                document.getElementById("txt-m1-sig").innerText = data.clinical_significance;
+                document.getElementById("txt-m1-freq").innerText = data.gnomad_allele_freq.toFixed(6);
+                document.getElementById("txt-m1-status").innerText = data.clinical_significance === "Benign" ? "Benign sequence variant" : "Pathological susceptibility locus";
+
+                document.getElementById("txt-m1-assoc").innerText = data.clinvar_association;
+                document.getElementById("txt-m1-narrative").innerText = data.interpretation_narrative;
+
+                const evidenceContainer = document.getElementById("m1-evidence-container");
+                evidenceContainer.innerHTML = "";
+                (data.evidence || []).forEach(paper => {
+                    const item = document.createElement("div");
+                    item.className = "bg-slate-950/20 border border-slate-800/80 rounded-2xl p-3 flex justify-between items-start space-x-3";
+                    item.innerHTML = `
+                        <div class="space-y-1">
+                            <p class="text-[11px] font-bold text-slate-200 line-clamp-2">${paper.title}</p>
+                            <p class="text-[9px] text-slate-400">${paper.journal} • ${paper.year}</p>
+                            <p class="text-[9px] text-indigo-400 italic font-medium">${paper.reason}</p>
+                        </div>
+                        <span class="bg-indigo-500/15 text-indigo-400 font-mono text-[9px] px-1.5 py-0.5 rounded border border-indigo-500/20 font-bold shrink-0">Sc: ${paper.score}</span>
+                    `;
+                    evidenceContainer.appendChild(item);
+                });
+
+            } catch (err) {
+                console.error(err);
+                alert("Error calling genomic diagnosis API endpoint. Please check connection.");
             }
         }
 
@@ -495,7 +691,6 @@
             const maxI = Math.max(...insulinVals, 40);
             const minI = Math.min(...insulinVals, 0);
 
-            // Grid lines
             ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
             ctx.lineWidth = 1;
             for (let i = 0; i <= 3; i++) {
@@ -506,7 +701,6 @@
                 ctx.stroke();
             }
 
-            // Labels
             ctx.fillStyle = "#94a3b8";
             ctx.font = "bold 9px Outfit";
             ctx.textAlign = "center";
@@ -515,7 +709,6 @@
                 ctx.fillText("Day " + t.day, x, height - 8);
             });
 
-            // Glucose line (Red)
             ctx.beginPath();
             timeline.forEach((t, index) => {
                 const x = padLeft + (chartWidth / Math.max(1, timeline.length - 1)) * index;
@@ -531,7 +724,6 @@
             ctx.stroke();
             ctx.shadowBlur = 0;
 
-            // Glucose points
             timeline.forEach((t, index) => {
                 const x = padLeft + (chartWidth / Math.max(1, timeline.length - 1)) * index;
                 const denominator = (maxG - minG) || 1;
@@ -545,7 +737,6 @@
                 ctx.stroke();
             });
 
-            // Insulin line (Blue)
             ctx.beginPath();
             timeline.forEach((t, index) => {
                 const x = padLeft + (chartWidth / Math.max(1, timeline.length - 1)) * index;
@@ -561,7 +752,6 @@
             ctx.stroke();
             ctx.shadowBlur = 0;
 
-            // Insulin points
             timeline.forEach((t, index) => {
                 const x = padLeft + (chartWidth / Math.max(1, timeline.length - 1)) * index;
                 const denominator = (maxI - minI) || 1;
@@ -575,7 +765,6 @@
                 ctx.stroke();
             });
 
-            // Legends
             ctx.fillStyle = "#ef4444";
             ctx.fillRect(padLeft, padTop - 12, 8, 4);
             ctx.fillStyle = "#94a3b8";

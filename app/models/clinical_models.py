@@ -49,3 +49,12 @@ class ClinicalResponse(BaseModel):
     genomics: GenomicVariant
     evidence: List[ScientificPaper]
     timeline: List[PatientHistory]
+
+class GenomicDiagnosisResponse(BaseModel):
+    variant: str
+    gene: str
+    clinical_significance: str
+    gnomad_allele_freq: float
+    clinvar_association: str
+    evidence: List[ScientificPaper]
+    interpretation_narrative: str
